@@ -46,9 +46,9 @@ export OS_ARCH=$( uname -m );
 # // String For Helping Installation
 export VERSION="1.0";
 export EDITION="Stable";
-export AUTHER="WildyDev21";
-export ROOT_DIRECTORY="/etc/wildydev21";
-export CORE_DIRECTORY="/usr/local/wildydev21";
+export AUTHER="fahmistore";
+export ROOT_DIRECTORY="/etc/fahmistore";
+export CORE_DIRECTORY="/usr/local/fahmistore";
 export SERVICE_DIRECTORY="/etc/systemd/system";
 export SCRIPT_SETUP_URL="https://raw.githubusercontent.com/Fahmiiiiiiii/vpn-script";
 export REPO_URL="https://repository.Fahmiiiiiiii.com";
@@ -79,35 +79,37 @@ export COUNTRY_NYA="$COUNTRY";
 export TIME_NYA="$TIMEZONE";
 
 # // Check Blacklist
-if [[ $( echo $CHK_BLACKLIST | jq -r '.respon_code' ) == "127" ]]; then
-    SKIP=true;
+if # // Validate Result ( 1 )
+touch /etc/${fahmistore}/license.key
+export Your_License_Key="$( cat /etc/${fahmistore}/license.key | awk '{print $1}' )"
+export Validated_Your_License_Key_With_Server="$( curl -s https://${Server_URL}/validated-registered-license-key.txt | grep -w $Your_License_Key | head -n1 | cut -d ' ' -f 1 )"
+if [[ "$Validated_Your_License_Key_With_Server" == "$Your_License_Key" ]]; then
+    validated='true'
 else
-    clear;
-    echo -e "${ERROR} Your IP Got Blacklisted";
-    exit 1;
+    echo -e "${EROR} License Key Not Valid"
+    exit 1
 fi
 
-# // Checking License Key
-if [[ -r /etc/wildydev21/license-key.wd21 ]]; then
-    SKIP=true;
-else
-    clear;
-    echo -e "${ERROR} Having error, all is corrupt";
-    exit 1;
-fi
-LCN_KEY=$( cat /etc/wildydev21/license-key.wd21 | awk '{print $3}' | sed 's/ //g' );
-if [[ $LCN_KEY == "" ]]; then
-    clear;
-    echo -e "${ERROR} Having Error in your License key";
-    exit 1;
+# // Checking VPS Status > Got Banned / No
+if [[ $IP == "$( curl -s https://${Server_URL}/blacklist.txt | cut -d ' ' -f 1 | grep -w $IP | head -n1 )" ]]; then
+    echo -e "${EROR} 403 Forbidden ( Your VPS Has Been Banned )"
+    exit  1
 fi
 
-if [[ $( echo ${API_REQ_NYA} | jq -r '.respon_code' ) == "104" ]]; then
-    SKIP=true;
+# // Checking VPS Status > Got Banned / No
+if [[ $Your_License_Key == "$( curl -s https://${Server_URL} | cut -d ' ' -f 1 | grep -w $Your_License_Key | head -n1)" ]]; then
+    echo -e "${EROR} 403 Forbidden ( Your License Has Been Limited )"
+    exit  1
+fi
+
+# // Checking VPS Status > Got Banned / No
+if [[ 'Standart' == "$( curl -s https://${Server_URL}/validated-registered-license-key.txt | grep -w $Your_License_Key | head -n1 | cut -d ' ' -f 8 )" ]]; then 
+    License_Mode='Standart'
+elif [[ Pro == "$( curl -s https://${Server_URL}/validated-registered-license-key.txt | grep -w $Your_License_Key | head -n1 | cut -d ' ' -f 8 )" ]]; then 
+    License_Mode='Pro'
 else
-    clear;
-    echo -e "${ERROR} Script Server Refused Connection";
-    exit 1;
+    echo -e "${EROR} Please Using Genuine License !"
+    exit 1
 fi
 
 # // Rending Your License data from json
